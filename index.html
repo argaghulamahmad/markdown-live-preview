@@ -30,6 +30,14 @@
             <div><a href="/">Markdown Live Preview</a></div>
             <div id="reset-button"><a href="#">Reset</a></div>
             <div id="copy-button"><a href="#">Copy</a></div>
+            <div id="download-dropdown" class="dropdown">
+                <a href="#" id="download-button">Download ▼</a>
+                <div class="dropdown-content">
+                    <a href="#" id="download-image">As Image</a>
+                    <a href="#" id="download-pdf">As PDF</a>
+                    <a href="#" id="download-word">As Word</a>
+                </div>
+            </div>
             <div id="sync-button"><input type="checkbox" id="sync-scroll-checkbox"><label for="sync-scroll-checkbox">Sync scroll</label></div>
         </div>
         <div id="github"><a href="https://github.com/tanabe/markdown-live-preview"><img src="image/GitHub-Mark-Light-32px.webp"></a></div>
@@ -53,5 +61,180 @@
     </div>
 
     <footer></footer>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Download Settings</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="settings-tabs">
+                    <button class="tab-button active" data-tab="basic">Basic Settings</button>
+                    <button class="tab-button" data-tab="code">Code Style</button>
+                    <button class="tab-button" data-tab="table">Table Style</button>
+                    <button class="tab-button" data-tab="preview">Preview</button>
+                </div>
+
+                <!-- Basic Settings Tab -->
+                <div id="basic-tab" class="tab-content active">
+                    <div class="settings-grid">
+                        <div class="setting-group">
+                            <label>H1 Size:</label>
+                            <input type="number" id="h1-size" value="1.8" step="0.1" min="0.5" max="3">
+                        </div>
+                        <div class="setting-group">
+                            <label>H2 Size:</label>
+                            <input type="number" id="h2-size" value="1.5" step="0.1" min="0.5" max="3">
+                        </div>
+                        <div class="setting-group">
+                            <label>H3 Size:</label>
+                            <input type="number" id="h3-size" value="1.25" step="0.1" min="0.5" max="3">
+                        </div>
+                        <div class="setting-group">
+                            <label>Heading Color:</label>
+                            <input type="color" id="heading-color" value="#333333">
+                        </div>
+                        <div class="setting-group">
+                            <label>Body Color:</label>
+                            <input type="color" id="body-color" value="#333333">
+                        </div>
+                        <div class="setting-group">
+                            <label>Body Size:</label>
+                            <input type="number" id="body-size" value="15" step="1" min="8" max="24">
+                        </div>
+                        <div class="setting-group">
+                            <label>Heading Font:</label>
+                            <select id="heading-font">
+                                <option value="PingFang SC">PingFang SC (苹方)</option>
+                                <option value="Arial">Arial</option>
+                                <option value="Helvetica">Helvetica</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Georgia">Georgia</option>
+                                <option value="Verdana">Verdana</option>
+                            </select>
+                        </div>
+                        <div class="setting-group">
+                            <label>Body Font:</label>
+                            <select id="body-font">
+                                <option value="PingFang SC">PingFang SC (苹方)</option>
+                                <option value="Arial">Arial</option>
+                                <option value="Helvetica">Helvetica</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Georgia">Georgia</option>
+                                <option value="Verdana">Verdana</option>
+                            </select>
+                        </div>
+                        <div class="setting-group">
+                            <label>Background Color 1:</label>
+                            <input type="color" id="bg-color-1" value="#f8f9fa">
+                        </div>
+                        <div class="setting-group">
+                            <label>Background Color 2:</label>
+                            <input type="color" id="bg-color-2" value="#ffffff">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Code Style Tab -->
+                <div id="code-tab" class="tab-content">
+                    <div class="settings-grid">
+                        <div class="setting-group">
+                            <label>Code Font Size:</label>
+                            <input type="number" id="code-size" value="14" step="1" min="8" max="20">
+                        </div>
+                        <div class="setting-group">
+                            <label>Code Background:</label>
+                            <input type="color" id="code-bg" value="#f6f8fa">
+                        </div>
+                        <div class="setting-group">
+                            <label>Code Text Color:</label>
+                            <input type="color" id="code-text" value="#24292e">
+                        </div>
+                        <div class="setting-group">
+                            <label>Code Font:</label>
+                            <select id="code-font">
+                                <option value="Monaco">Monaco</option>
+                                <option value="Consolas">Consolas</option>
+                                <option value="Courier New">Courier New</option>
+                                <option value="Source Code Pro">Source Code Pro</option>
+                                <option value="Fira Code">Fira Code</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table Style Tab -->
+                <div id="table-tab" class="tab-content">
+                    <div class="settings-grid">
+                        <div class="setting-group">
+                            <label>Table Font Size:</label>
+                            <input type="number" id="table-size" value="14" step="1" min="8" max="20">
+                        </div>
+                        <div class="setting-group">
+                            <label>Border Color:</label>
+                            <input type="color" id="border-color" value="#d0d7de">
+                        </div>
+                        <div class="collapsible">
+                            <div class="collapsible-header">
+                                <span>Table Header Style</span>
+                                <span class="chevron">▼</span>
+                            </div>
+                            <div class="collapsible-content">
+                                <div class="setting-group">
+                                    <label>Background:</label>
+                                    <input type="color" id="header-bg" value="#f6f8fa">
+                                </div>
+                                <div class="setting-group">
+                                    <label>Text Color:</label>
+                                    <input type="color" id="header-text" value="#24292e">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="collapsible">
+                            <div class="collapsible-header">
+                                <span>Table Cell Style</span>
+                                <span class="chevron">▼</span>
+                            </div>
+                            <div class="collapsible-content">
+                                <div class="setting-group">
+                                    <label>Background:</label>
+                                    <input type="color" id="cell-bg" value="#ffffff">
+                                </div>
+                                <div class="setting-group">
+                                    <label>Text Color:</label>
+                                    <input type="color" id="cell-text" value="#24292e">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Theme Presets -->
+                <div class="theme-presets">
+                    <h3>Theme Presets</h3>
+                    <div class="preset-buttons">
+                        <button class="preset-btn" data-theme="light">Light</button>
+                        <button class="preset-btn" data-theme="warm">Warm</button>
+                        <button class="preset-btn" data-theme="elegant">Elegant</button>
+                        <button class="preset-btn" data-theme="dark">Dark</button>
+                        <button class="preset-btn" data-theme="gradient">Gradient</button>
+                        <button class="preset-btn" data-theme="nature">Nature</button>
+                        <button class="preset-btn" data-theme="sunset">Sunset</button>
+                        <button class="preset-btn" data-theme="ocean">Ocean</button>
+                        <button class="preset-btn" data-theme="mint">Mint</button>
+                        <button class="preset-btn active" data-theme="tiffany">Tiffany</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="apply-settings" class="btn-primary">Apply Settings</button>
+                <button id="reset-settings" class="btn-secondary">Reset</button>
+                <button id="cancel-settings" class="btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
   </body>
 </html>
