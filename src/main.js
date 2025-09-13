@@ -218,6 +218,36 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         }, 1000)
     };
 
+    // ----- theme management -----
+
+    let currentTheme = 'light';
+    const themeStorageKey = 'markdown-preview-theme';
+
+    let initTheme = () => {
+        const savedTheme = localStorage.getItem(themeStorageKey);
+        if (savedTheme) {
+            currentTheme = savedTheme;
+        }
+        applyTheme(currentTheme);
+    };
+
+    let applyTheme = (theme) => {
+        document.documentElement.setAttribute('data-theme', theme);
+        currentTheme = theme;
+        localStorage.setItem(themeStorageKey, theme);
+        
+        // Update theme icon
+        const themeIcon = document.getElementById('theme-icon');
+        if (themeIcon) {
+            themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+    };
+
+    let toggleTheme = () => {
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        applyTheme(newTheme);
+    };
+
     // ----- settings and styling utils -----
 
     let currentSettings = {
@@ -740,6 +770,13 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         });
     };
 
+    let setupThemeToggle = () => {
+        const themeToggleBtn = document.getElementById('theme-toggle-btn');
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener('click', toggleTheme);
+        }
+    };
+
     let setupSettingsModal = () => {
         const modal = document.getElementById('settings-modal');
         const closeBtn = document.querySelector('.close');
@@ -946,11 +983,13 @@ This web site is using ${"`"}markedjs/marked${"`"}.
     setupCopyButton(editor);
     setupDownloadButtons();
     setupSettingsModal();
+    setupThemeToggle();
 
     let scrollBarSettings = loadScrollBarSettings() || false;
     initScrollBarSync(scrollBarSettings);
 
     setupDivider();
+    initTheme();
 };
 
 window.addEventListener("load", () => {
