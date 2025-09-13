@@ -248,6 +248,45 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         applyTheme(newTheme);
     };
 
+    // ----- page setup settings -----
+
+    let pageSetupSettings = {
+        pdf: {
+            pageSize: 'a4',
+            orientation: 'portrait',
+            marginTop: 20,
+            marginBottom: 20,
+            marginLeft: 20,
+            marginRight: 20,
+            fontSize: 12,
+            lineHeight: 1.5,
+            pageNumbers: true
+        },
+        word: {
+            pageSize: 'a4',
+            orientation: 'portrait',
+            marginTop: 25.4,
+            marginBottom: 25.4,
+            marginLeft: 25.4,
+            marginRight: 25.4,
+            fontFamily: 'Arial',
+            fontSize: 12,
+            lineHeight: 1.15,
+            pageNumbers: true,
+            tableOfContents: false
+        }
+    };
+
+    // Page size mappings
+    const pageSizeMap = {
+        a4: { width: 210, height: 297 },
+        a3: { width: 297, height: 420 },
+        a5: { width: 148, height: 210 },
+        letter: { width: 215.9, height: 279.4 },
+        legal: { width: 215.9, height: 355.6 },
+        tabloid: { width: 279.4, height: 431.8 }
+    };
+
     // ----- settings and styling utils -----
 
     let currentSettings = {
@@ -555,6 +594,105 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         resetPreviewBtn.addEventListener('click', resetPreview);
     };
 
+    // ----- page setup modal management -----
+
+    let showPageSetupModal = () => {
+        const modal = document.getElementById('page-setup-modal');
+        modal.style.display = 'block';
+        loadPageSetupToForm();
+    };
+
+    let hidePageSetupModal = () => {
+        const modal = document.getElementById('page-setup-modal');
+        modal.style.display = 'none';
+    };
+
+    let loadPageSetupToForm = () => {
+        // Load PDF settings
+        Object.keys(pageSetupSettings.pdf).forEach(key => {
+            const element = document.getElementById('pdf-' + key.replace(/([A-Z])/g, '-$1').toLowerCase());
+            if (element) {
+                if (element.type === 'checkbox') {
+                    element.checked = pageSetupSettings.pdf[key];
+                } else {
+                    element.value = pageSetupSettings.pdf[key];
+                }
+            }
+        });
+
+        // Load Word settings
+        Object.keys(pageSetupSettings.word).forEach(key => {
+            const element = document.getElementById('word-' + key.replace(/([A-Z])/g, '-$1').toLowerCase());
+            if (element) {
+                if (element.type === 'checkbox') {
+                    element.checked = pageSetupSettings.word[key];
+                } else {
+                    element.value = pageSetupSettings.word[key];
+                }
+            }
+        });
+    };
+
+    let savePageSetupFromForm = () => {
+        // Save PDF settings
+        Object.keys(pageSetupSettings.pdf).forEach(key => {
+            const element = document.getElementById('pdf-' + key.replace(/([A-Z])/g, '-$1').toLowerCase());
+            if (element) {
+                if (element.type === 'checkbox') {
+                    pageSetupSettings.pdf[key] = element.checked;
+                } else if (element.type === 'number') {
+                    pageSetupSettings.pdf[key] = parseFloat(element.value);
+                } else {
+                    pageSetupSettings.pdf[key] = element.value;
+                }
+            }
+        });
+
+        // Save Word settings
+        Object.keys(pageSetupSettings.word).forEach(key => {
+            const element = document.getElementById('word-' + key.replace(/([A-Z])/g, '-$1').toLowerCase());
+            if (element) {
+                if (element.type === 'checkbox') {
+                    pageSetupSettings.word[key] = element.checked;
+                } else if (element.type === 'number') {
+                    pageSetupSettings.word[key] = parseFloat(element.value);
+                } else {
+                    pageSetupSettings.word[key] = element.value;
+                }
+            }
+        });
+    };
+
+    let resetPageSetupToDefault = () => {
+        pageSetupSettings = {
+            pdf: {
+                pageSize: 'a4',
+                orientation: 'portrait',
+                marginTop: 20,
+                marginBottom: 20,
+                marginLeft: 20,
+                marginRight: 20,
+                fontSize: 12,
+                lineHeight: 1.5,
+                pageNumbers: true
+            },
+            word: {
+                pageSize: 'a4',
+                orientation: 'portrait',
+                marginTop: 25.4,
+                marginBottom: 25.4,
+                marginLeft: 25.4,
+                marginRight: 25.4,
+                fontFamily: 'Arial',
+                fontSize: 12,
+                lineHeight: 1.15,
+                pageNumbers: true,
+                tableOfContents: false
+            }
+        };
+        loadPageSetupToForm();
+    };
+
     // ----- download utils -----
 
     let downloadAsImage = async () => {
@@ -599,21 +737,63 @@ This web site is using ${"`"}markedjs/marked${"`"}.
             });
             
             const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const imgWidth = 210;
-            const pageHeight = 295;
+            
+            // Get page setup settings
+            const settings = pageSetupSettings.pdf;
+            const pageSize = pageSizeMap[settings.pageSize];
+            const orientation = settings.orientation;
+            
+            // Calculate dimensions based on orientation
+            let pageWidth, pageHeight;
+            if (orientation === 'landscape') {
+                pageWidth = pageSize.height;
+                pageHeight = pageSize.width;
+            } else {
+                pageWidth = pageSize.width;
+                pageHeight = pageSize.height;
+            }
+            
+            // Create PDF with custom page size
+            const pdf = new jsPDF(orientation, 'mm', [pageWidth, pageHeight]);
+            
+            // Calculate content area (page size minus margins)
+            const contentWidth = pageWidth - settings.marginLeft - settings.marginRight;
+            const contentHeight = pageHeight - settings.marginTop - settings.marginBottom;
+            
+            // Calculate image dimensions to fit content area
+            const imgWidth = contentWidth;
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            
             let heightLeft = imgHeight;
             let position = 0;
+            let pageNumber = 1;
 
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
+            // Add first page
+            pdf.addImage(imgData, 'PNG', settings.marginLeft, settings.marginTop + position, imgWidth, imgHeight);
+            
+            // Add page numbers if enabled
+            if (settings.pageNumbers) {
+                pdf.setFontSize(10);
+                pdf.text(`Page ${pageNumber}`, pageWidth - 20, pageHeight - 10);
+            }
+            
+            heightLeft -= contentHeight;
 
+            // Add additional pages if needed
             while (heightLeft >= 0) {
                 position = heightLeft - imgHeight;
                 pdf.addPage();
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
+                pageNumber++;
+                
+                pdf.addImage(imgData, 'PNG', settings.marginLeft, settings.marginTop + position, imgWidth, imgHeight);
+                
+                // Add page numbers if enabled
+                if (settings.pageNumbers) {
+                    pdf.setFontSize(10);
+                    pdf.text(`Page ${pageNumber}`, pageWidth - 20, pageHeight - 10);
+                }
+                
+                heightLeft -= contentHeight;
             }
 
             pdf.save('markdown-preview.pdf');
@@ -630,14 +810,46 @@ This web site is using ${"`"}markedjs/marked${"`"}.
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = html;
             
+            // Get page setup settings
+            const settings = pageSetupSettings.word;
+            const pageSize = pageSizeMap[settings.pageSize];
+            const orientation = settings.orientation;
+            
+            // Calculate dimensions based on orientation
+            let pageWidth, pageHeight;
+            if (orientation === 'landscape') {
+                pageWidth = pageSize.height;
+                pageHeight = pageSize.width;
+            } else {
+                pageWidth = pageSize.width;
+                pageHeight = pageSize.height;
+            }
+            
             const paragraphs = [];
+            
+            // Add table of contents if enabled
+            if (settings.tableOfContents) {
+                paragraphs.push(new Paragraph({
+                    text: "Table of Contents",
+                    heading: HeadingLevel.HEADING_1
+                }));
+                paragraphs.push(new Paragraph({
+                    text: "This is a placeholder for table of contents. In a full implementation, this would be automatically generated based on the headings in the document.",
+                    italics: true
+                }));
+                paragraphs.push(new Paragraph({ text: "" })); // Empty line
+            }
             
             // Process each element in the HTML
             const processElement = (element) => {
                 if (element.nodeType === Node.TEXT_NODE) {
                     const text = element.textContent.trim();
                     if (text) {
-                        return new TextRun(text);
+                        return new TextRun({
+                            text: text,
+                            font: settings.fontFamily,
+                            size: settings.fontSize * 2 // docx uses half-points
+                        });
                     }
                     return null;
                 }
@@ -649,55 +861,69 @@ This web site is using ${"`"}markedjs/marked${"`"}.
                     if (tagName === 'h1') {
                         return new Paragraph({
                             children: children,
-                            heading: HeadingLevel.HEADING_1
+                            heading: HeadingLevel.HEADING_1,
+                            spacing: { after: 200, before: 200 }
                         });
                     } else if (tagName === 'h2') {
                         return new Paragraph({
                             children: children,
-                            heading: HeadingLevel.HEADING_2
+                            heading: HeadingLevel.HEADING_2,
+                            spacing: { after: 200, before: 200 }
                         });
                     } else if (tagName === 'h3') {
                         return new Paragraph({
                             children: children,
-                            heading: HeadingLevel.HEADING_3
+                            heading: HeadingLevel.HEADING_3,
+                            spacing: { after: 200, before: 200 }
                         });
                     } else if (tagName === 'h4') {
                         return new Paragraph({
                             children: children,
-                            heading: HeadingLevel.HEADING_4
+                            heading: HeadingLevel.HEADING_4,
+                            spacing: { after: 200, before: 200 }
                         });
                     } else if (tagName === 'h5') {
                         return new Paragraph({
                             children: children,
-                            heading: HeadingLevel.HEADING_5
+                            heading: HeadingLevel.HEADING_5,
+                            spacing: { after: 200, before: 200 }
                         });
                     } else if (tagName === 'h6') {
                         return new Paragraph({
                             children: children,
-                            heading: HeadingLevel.HEADING_6
+                            heading: HeadingLevel.HEADING_6,
+                            spacing: { after: 200, before: 200 }
                         });
                     } else if (tagName === 'p') {
                         return new Paragraph({
-                            children: children
+                            children: children,
+                            spacing: { after: 200, before: 0 }
                         });
                     } else if (tagName === 'strong' || tagName === 'b') {
                         return new TextRun({
                             text: element.textContent,
-                            bold: true
+                            bold: true,
+                            font: settings.fontFamily,
+                            size: settings.fontSize * 2
                         });
                     } else if (tagName === 'em' || tagName === 'i') {
                         return new TextRun({
                             text: element.textContent,
-                            italics: true
+                            italics: true,
+                            font: settings.fontFamily,
+                            size: settings.fontSize * 2
                         });
                     } else if (tagName === 'code') {
                         return new TextRun({
                             text: element.textContent,
-                            font: 'Courier New'
+                            font: 'Courier New',
+                            size: settings.fontSize * 2
                         });
                     } else if (tagName === 'br') {
                         return new TextRun({
-                            text: '\n'
+                            text: '\n',
+                            font: settings.fontFamily,
+                            size: settings.fontSize * 2
                         });
                     } else {
                         // For other elements, just process their children
@@ -710,9 +936,31 @@ This web site is using ${"`"}markedjs/marked${"`"}.
             const processedElements = Array.from(tempDiv.childNodes).map(processElement).filter(Boolean);
             paragraphs.push(...processedElements);
             
+            // Add page numbers if enabled
+            if (settings.pageNumbers) {
+                paragraphs.push(new Paragraph({
+                    text: "Page numbers would be added here in a full implementation",
+                    italics: true,
+                    alignment: "center"
+                }));
+            }
+            
             const doc = new Document({
                 sections: [{
-                    properties: {},
+                    properties: {
+                        page: {
+                            size: {
+                                width: pageWidth * 28.35, // Convert mm to points
+                                height: pageHeight * 28.35
+                            },
+                            margin: {
+                                top: settings.marginTop * 28.35,
+                                bottom: settings.marginBottom * 28.35,
+                                left: settings.marginLeft * 28.35,
+                                right: settings.marginRight * 28.35
+                            }
+                        }
+                    },
                     children: paragraphs
                 }]
             });
@@ -767,6 +1015,13 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         document.querySelector("#download-word").addEventListener('click', (event) => {
             event.preventDefault();
             downloadAsWord();
+        });
+    };
+
+    let setupPageSetupButton = () => {
+        document.querySelector("#page-setup-button").addEventListener('click', (event) => {
+            event.preventDefault();
+            showPageSetupModal();
         });
     };
 
@@ -871,6 +1126,50 @@ This web site is using ${"`"}markedjs/marked${"`"}.
             loadSettingsToForm();
             updatePreview();
         });
+    };
+
+    let setupPageSetupModal = () => {
+        const modal = document.getElementById('page-setup-modal');
+        const closeBtn = document.getElementById('close-page-setup');
+        const cancelBtn = document.getElementById('cancel-page-setup');
+        const applyBtn = document.getElementById('apply-page-setup');
+        const resetBtn = document.getElementById('reset-page-setup');
+
+        // Close modal events
+        closeBtn.addEventListener('click', hidePageSetupModal);
+        cancelBtn.addEventListener('click', hidePageSetupModal);
+        window.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                hidePageSetupModal();
+            }
+        });
+
+        // Tab switching
+        const tabButtons = document.querySelectorAll('#page-setup-modal .tab-button');
+        const tabContents = document.querySelectorAll('#page-setup-modal .tab-content');
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tabName = button.getAttribute('data-tab');
+                
+                // Remove active class from all buttons and contents
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+                
+                // Add active class to clicked button and corresponding content
+                button.classList.add('active');
+                document.getElementById(tabName + '-tab').classList.add('active');
+            });
+        });
+
+        // Apply settings
+        applyBtn.addEventListener('click', () => {
+            savePageSetupFromForm();
+            hidePageSetupModal();
+        });
+
+        // Reset settings
+        resetBtn.addEventListener('click', resetPageSetupToDefault);
     };
 
     // ----- local state -----
@@ -982,7 +1281,9 @@ This web site is using ${"`"}markedjs/marked${"`"}.
     setupResetButton();
     setupCopyButton(editor);
     setupDownloadButtons();
+    setupPageSetupButton();
     setupSettingsModal();
+    setupPageSetupModal();
     setupThemeToggle();
 
     let scrollBarSettings = loadScrollBarSettings() || false;

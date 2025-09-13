@@ -38,6 +38,7 @@
                     <a href="#" id="download-word">As Word</a>
                 </div>
             </div>
+            <div id="page-setup-button"><a href="#">Page Setup</a></div>
             <div id="sync-button"><input type="checkbox" id="sync-scroll-checkbox"><label for="sync-scroll-checkbox">Sync scroll</label></div>
             <div id="theme-toggle">
                 <button id="theme-toggle-btn" title="Toggle dark mode">
@@ -256,6 +257,146 @@
                 <button id="apply-settings" class="btn-primary">Apply Settings</button>
                 <button id="reset-settings" class="btn-secondary">Reset</button>
                 <button id="cancel-settings" class="btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page Setup Modal -->
+    <div id="page-setup-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Page Setup</h2>
+                <span class="close" id="close-page-setup">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="settings-tabs">
+                    <button class="tab-button active" data-tab="pdf-setup">PDF Settings</button>
+                    <button class="tab-button" data-tab="word-setup">Word Settings</button>
+                </div>
+
+                <!-- PDF Settings Tab -->
+                <div id="pdf-setup-tab" class="tab-content active">
+                    <div class="settings-grid">
+                        <div class="setting-group">
+                            <label>Page Size:</label>
+                            <select id="pdf-page-size">
+                                <option value="a4">A4 (210 × 297 mm)</option>
+                                <option value="a3">A3 (297 × 420 mm)</option>
+                                <option value="a5">A5 (148 × 210 mm)</option>
+                                <option value="letter">Letter (8.5 × 11 in)</option>
+                                <option value="legal">Legal (8.5 × 14 in)</option>
+                                <option value="tabloid">Tabloid (11 × 17 in)</option>
+                            </select>
+                        </div>
+                        <div class="setting-group">
+                            <label>Orientation:</label>
+                            <select id="pdf-orientation">
+                                <option value="portrait">Portrait</option>
+                                <option value="landscape">Landscape</option>
+                            </select>
+                        </div>
+                        <div class="setting-group">
+                            <label>Top Margin (mm):</label>
+                            <input type="number" id="pdf-margin-top" value="20" step="1" min="0" max="50">
+                        </div>
+                        <div class="setting-group">
+                            <label>Bottom Margin (mm):</label>
+                            <input type="number" id="pdf-margin-bottom" value="20" step="1" min="0" max="50">
+                        </div>
+                        <div class="setting-group">
+                            <label>Left Margin (mm):</label>
+                            <input type="number" id="pdf-margin-left" value="20" step="1" min="0" max="50">
+                        </div>
+                        <div class="setting-group">
+                            <label>Right Margin (mm):</label>
+                            <input type="number" id="pdf-margin-right" value="20" step="1" min="0" max="50">
+                        </div>
+                        <div class="setting-group">
+                            <label>Font Size (pt):</label>
+                            <input type="number" id="pdf-font-size" value="12" step="1" min="8" max="24">
+                        </div>
+                        <div class="setting-group">
+                            <label>Line Height:</label>
+                            <input type="number" id="pdf-line-height" value="1.5" step="0.1" min="1.0" max="3.0">
+                        </div>
+                        <div class="setting-group">
+                            <label>Include Page Numbers:</label>
+                            <input type="checkbox" id="pdf-page-numbers" checked>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Word Settings Tab -->
+                <div id="word-setup-tab" class="tab-content">
+                    <div class="settings-grid">
+                        <div class="setting-group">
+                            <label>Page Size:</label>
+                            <select id="word-page-size">
+                                <option value="a4">A4 (210 × 297 mm)</option>
+                                <option value="a3">A3 (297 × 420 mm)</option>
+                                <option value="a5">A5 (148 × 210 mm)</option>
+                                <option value="letter">Letter (8.5 × 11 in)</option>
+                                <option value="legal">Legal (8.5 × 14 in)</option>
+                                <option value="tabloid">Tabloid (11 × 17 in)</option>
+                            </select>
+                        </div>
+                        <div class="setting-group">
+                            <label>Orientation:</label>
+                            <select id="word-orientation">
+                                <option value="portrait">Portrait</option>
+                                <option value="landscape">Landscape</option>
+                            </select>
+                        </div>
+                        <div class="setting-group">
+                            <label>Top Margin (mm):</label>
+                            <input type="number" id="word-margin-top" value="25.4" step="1" min="0" max="50">
+                        </div>
+                        <div class="setting-group">
+                            <label>Bottom Margin (mm):</label>
+                            <input type="number" id="word-margin-bottom" value="25.4" step="1" min="0" max="50">
+                        </div>
+                        <div class="setting-group">
+                            <label>Left Margin (mm):</label>
+                            <input type="number" id="word-margin-left" value="25.4" step="1" min="0" max="50">
+                        </div>
+                        <div class="setting-group">
+                            <label>Right Margin (mm):</label>
+                            <input type="number" id="word-margin-right" value="25.4" step="1" min="0" max="50">
+                        </div>
+                        <div class="setting-group">
+                            <label>Font Family:</label>
+                            <select id="word-font-family">
+                                <option value="Arial">Arial</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Calibri">Calibri</option>
+                                <option value="Georgia">Georgia</option>
+                                <option value="Verdana">Verdana</option>
+                                <option value="Helvetica">Helvetica</option>
+                            </select>
+                        </div>
+                        <div class="setting-group">
+                            <label>Font Size (pt):</label>
+                            <input type="number" id="word-font-size" value="12" step="1" min="8" max="24">
+                        </div>
+                        <div class="setting-group">
+                            <label>Line Height:</label>
+                            <input type="number" id="word-line-height" value="1.15" step="0.05" min="1.0" max="3.0">
+                        </div>
+                        <div class="setting-group">
+                            <label>Include Page Numbers:</label>
+                            <input type="checkbox" id="word-page-numbers" checked>
+                        </div>
+                        <div class="setting-group">
+                            <label>Include Table of Contents:</label>
+                            <input type="checkbox" id="word-toc">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="apply-page-setup" class="btn-primary">Apply Settings</button>
+                <button id="reset-page-setup" class="btn-secondary">Reset to Default</button>
+                <button id="cancel-page-setup" class="btn-secondary">Cancel</button>
             </div>
         </div>
     </div>
