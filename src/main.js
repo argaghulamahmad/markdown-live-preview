@@ -340,6 +340,7 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         const modal = document.getElementById('settings-modal');
         modal.style.display = 'block';
         loadSettingsToForm();
+        updatePreview();
     };
 
     let hideSettingsModal = () => {
@@ -450,7 +451,78 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         if (themePresets[themeName]) {
             currentSettings = { ...themePresets[themeName] };
             loadSettingsToForm();
+            updatePreview();
         }
+    };
+
+    let updatePreview = () => {
+        const previewContent = document.getElementById('preview-content');
+        const originalContent = document.querySelector('#output').innerHTML;
+        
+        // Copy the original content to preview
+        previewContent.innerHTML = originalContent;
+        
+        // Apply current settings to preview
+        const tempSettings = { ...currentSettings };
+        saveSettingsFromForm();
+        applyCustomStyles(previewContent, currentSettings);
+        
+        // Restore settings if they were changed
+        currentSettings = tempSettings;
+    };
+
+    let resetPreview = () => {
+        const previewContent = document.getElementById('preview-content');
+        const originalContent = document.querySelector('#output').innerHTML;
+        previewContent.innerHTML = originalContent;
+        
+        // Remove all custom styles
+        const allElements = previewContent.querySelectorAll('*');
+        allElements.forEach(el => {
+            el.style.fontSize = '';
+            el.style.fontFamily = '';
+            el.style.color = '';
+            el.style.backgroundColor = '';
+        });
+        previewContent.style.fontSize = '';
+        previewContent.style.fontFamily = '';
+        previewContent.style.color = '';
+        previewContent.style.backgroundColor = '';
+    };
+
+    let setupPreviewListeners = () => {
+        // Auto-update preview when settings change
+        const autoPreviewCheckbox = document.getElementById('auto-preview');
+        const updatePreviewBtn = document.getElementById('update-preview');
+        const resetPreviewBtn = document.getElementById('reset-preview');
+        
+        // Get all input elements in the settings
+        const allInputs = document.querySelectorAll('#settings-modal input, #settings-modal select');
+        
+        allInputs.forEach(input => {
+            input.addEventListener('input', () => {
+                if (autoPreviewCheckbox.checked) {
+                    saveSettingsFromForm();
+                    updatePreview();
+                }
+            });
+            
+            input.addEventListener('change', () => {
+                if (autoPreviewCheckbox.checked) {
+                    saveSettingsFromForm();
+                    updatePreview();
+                }
+            });
+        });
+        
+        // Manual update button
+        updatePreviewBtn.addEventListener('click', () => {
+            saveSettingsFromForm();
+            updatePreview();
+        });
+        
+        // Reset preview button
+        resetPreviewBtn.addEventListener('click', resetPreview);
     };
 
     // ----- download utils -----
@@ -732,6 +804,9 @@ This web site is using ${"`"}markedjs/marked${"`"}.
             hideSettingsModal();
         });
 
+        // Setup preview functionality
+        setupPreviewListeners();
+
         // Reset settings
         resetBtn.addEventListener('click', () => {
             currentSettings = {
@@ -757,6 +832,7 @@ This web site is using ${"`"}markedjs/marked${"`"}.
                 cellText: '#24292e'
             };
             loadSettingsToForm();
+            updatePreview();
         });
     };
 
