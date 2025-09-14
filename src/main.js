@@ -6,6 +6,8 @@ import 'github-markdown-css/github-markdown-light.css';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
+import mermaid from 'mermaid';
+import plantumlEncoder from 'plantuml-encoder';
 
 const init = () => {
     let hasEdited = false;
@@ -85,6 +87,32 @@ ${"`"}${"`"}${"`"}
 ## Inline code
 
 This web site is using ${"`"}markedjs/marked${"`"}.
+
+## Mermaid Diagrams
+
+You can create diagrams using Mermaid syntax:
+
+${"```"}mermaid
+graph TD
+    A[Start] --> B{Is it?}
+    B -->|Yes| C[OK]
+    C --> D[Rethink]
+    D --> B
+    B ---->|No| E[End]
+${"```"}
+
+## PlantUML Diagrams
+
+You can also create diagrams using PlantUML syntax:
+
+${"```"}puml
+@startuml
+Alice -> Bob: Authentication Request
+Bob --> Alice: Authentication Response
+Alice -> Bob: Another authentication Request
+Alice <-- Bob: Another authentication Response
+@enduml
+${"```"}
 `;
 
     self.MonacoEnvironment = {
@@ -111,13 +139,13 @@ This web site is using ${"`"}markedjs/marked${"`"}.
             folding: false
         });
 
-        editor.onDidChangeModelContent(() => {
+        editor.onDidChangeModelContent(async () => {
             let changed = editor.getValue() != defaultInput;
             if (changed) {
                 hasEdited = true;
             }
             let value = editor.getValue();
-            convert(value);
+            await convert(value);
             saveLastContent(value);
         });
 
@@ -141,8 +169,97 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         return editor;
     };
 
+    // Initialize Mermaid
+    let initMermaid = () => {
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'default',
+            securityLevel: 'loose',
+            fontFamily: 'Arial, sans-serif'
+        });
+    };
+
+    // Render Mermaid diagrams
+    let renderMermaidDiagrams = async (container) => {
+        const mermaidElements = container.querySelectorAll('pre code.language-mermaid, pre code.lang-mermaid');
+        
+        for (let i = 0; i < mermaidElements.length; i++) {
+            const element = mermaidElements[i];
+            const mermaidCode = element.textContent;
+            
+            // Create a unique ID for this diagram
+            const diagramId = `mermaid-${Date.now()}-${i}`;
+            
+            // Create a container for the diagram
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'mermaid-diagram';
+            diagramContainer.id = diagramId;
+            
+            // Replace the code block with the diagram container
+            const preElement = element.parentElement;
+            preElement.parentElement.replaceChild(diagramContainer, preElement);
+            
+            try {
+                // Render the Mermaid diagram
+                const { svg } = await mermaid.render(diagramId, mermaidCode);
+                diagramContainer.innerHTML = svg;
+            } catch (error) {
+                console.error('Error rendering Mermaid diagram:', error);
+                diagramContainer.innerHTML = `<div class="mermaid-error">Error rendering diagram: ${error.message}</div>`;
+            }
+        }
+    };
+
+    // Render PlantUML diagrams
+    let renderPlantUMLDiagrams = async (container) => {
+        const pumlElements = container.querySelectorAll('pre code.language-puml, pre code.lang-puml, pre code.language-plantuml, pre code.lang-plantuml');
+        
+        for (let i = 0; i < pumlElements.length; i++) {
+            const element = pumlElements[i];
+            const pumlCode = element.textContent;
+            
+            // Create a container for the diagram
+            const diagramContainer = document.createElement('div');
+            diagramContainer.className = 'plantuml-diagram';
+            
+            // Replace the code block with the diagram container
+            const preElement = element.parentElement;
+            preElement.parentElement.replaceChild(diagramContainer, preElement);
+            
+            try {
+                // Encode the PlantUML code
+                const encoded = plantumlEncoder.encode(pumlCode);
+                
+                // Create an image element that will load the diagram from PlantUML server
+                const img = document.createElement('img');
+                img.src = `https://www.plantuml.com/plantuml/svg/${encoded}`;
+                img.alt = 'PlantUML Diagram';
+                img.style.maxWidth = '100%';
+                img.style.height = 'auto';
+                
+                // Add loading state
+                diagramContainer.innerHTML = '<div class="plantuml-loading">Loading PlantUML diagram...</div>';
+                
+                // Handle image load success
+                img.onload = () => {
+                    diagramContainer.innerHTML = '';
+                    diagramContainer.appendChild(img);
+                };
+                
+                // Handle image load error
+                img.onerror = () => {
+                    diagramContainer.innerHTML = '<div class="plantuml-error">Error loading PlantUML diagram. Please check your syntax.</div>';
+                };
+                
+            } catch (error) {
+                console.error('Error rendering PlantUML diagram:', error);
+                diagramContainer.innerHTML = `<div class="plantuml-error">Error rendering diagram: ${error.message}</div>`;
+            }
+        }
+    };
+
     // Render markdown text as html
-    let convert = (markdown) => {
+    let convert = async (markdown) => {
         let options = {
             headerIds: false,
             mangle: false
@@ -150,6 +267,10 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         let html = marked.parse(markdown, options);
         let sanitized = DOMPurify.sanitize(html);
         document.querySelector('#output').innerHTML = sanitized;
+        
+        // Render Mermaid and PlantUML diagrams after the content is loaded
+        await renderMermaidDiagrams(document.querySelector('#output'));
+        await renderPlantUMLDiagrams(document.querySelector('#output'));
     };
 
     // Reset input text
@@ -1291,6 +1412,7 @@ This web site is using ${"`"}markedjs/marked${"`"}.
 
     setupDivider();
     initTheme();
+    initMermaid();
 };
 
 window.addEventListener("load", () => {

@@ -696,3 +696,50 @@ footer {
   height: auto;
   border-radius: 4px;
 }
+
+/* Mermaid and PlantUML diagram styles */
+.mermaid-diagram,
+.plantuml-diagram {
+  margin: 1em 0;
+  text-align: center;
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  padding: 1em;
+  background-color: var(--bg-secondary);
+}
+
+.mermaid-diagram svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.plantuml-diagram img {
+  max-width: 100%;
+  height: auto;
+  border: none;
+  border-radius: 0;
+}
+
+.mermaid-error,
+.plantuml-error {
+  color: #d73a49;
+  background-color: #ffeef0;
+  border: 1px solid #f97583;
+  border-radius: 4px;
+  padding: 0.5em;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+.plantuml-loading {
+  color: var(--text-secondary);
+  font-style: italic;
+  padding: 1em;
+}
+
+[data-theme="dark"] .mermaid-error,
+[data-theme="dark"] .plantuml-error {
+  color: #f85149;
+  background-color: #490202;
+  border-color: #f85149;
+}
